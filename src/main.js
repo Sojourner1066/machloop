@@ -1,5 +1,5 @@
-import Map from "https://js.arcgis.com/4.29/esri/Map.js";
-import MapView from "https://js.arcgis.com/4.29/esri/views/MapView.js";
+import Map from "@arcgis/core/Map";
+import MapView from "@arcgis/core/views/MapView";
 
 const map = new Map({
   basemap: "topo-vector"
@@ -8,6 +8,6 @@ const map = new Map({
 const view = new MapView({
   container: "viewDiv",
   map: map,
-  center: [-122.4194, 37.7749], // example: San Francisco
+  center: [-122.4194, 37.7749], // San Francisco
   zoom: 12
 });
