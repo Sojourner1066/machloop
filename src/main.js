@@ -20,7 +20,7 @@ const view = new MapView({
 // --- Camping Locations ---
 const campingRenderer = new SimpleRenderer({
   symbol: new PictureMarkerSymbol({
-    url: "/camping.svg",
+    url: `${import.meta.env.BASE_URL}camping.svg`,
     width: "24px",
     height: "24px"
   })
@@ -40,7 +40,7 @@ map.add(campingLayer);
 // --- Parking Locations ---
 const parkingRenderer = new SimpleRenderer({
   symbol: new PictureMarkerSymbol({
-    url: "/parking.svg",
+    url: `${import.meta.env.BASE_URL}parking.svg`,
     width: "24px",
     height: "24px"
   })
@@ -60,7 +60,7 @@ map.add(parkingLayer);
 // --- Viewing Locations ---
 const viewRenderer = new SimpleRenderer({
   symbol: new PictureMarkerSymbol({
-    url: "/view.svg",
+    url: `${import.meta.env.BASE_URL}view.svg`,
     width: "24px",
     height: "24px"
   })
@@ -80,7 +80,7 @@ map.add(viewingLayer);
 // --- RAF Bases ---
 const rafRenderer = new SimpleRenderer({
   symbol: new PictureMarkerSymbol({
-    url: "/fighter-jet.svg",
+    url: `${import.meta.env.BASE_URL}fighter-jet.svg`,
     width: "24px",
     height: "24px"
   })
