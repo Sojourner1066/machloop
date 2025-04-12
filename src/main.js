@@ -7,7 +7,7 @@ import * as geometryEngine from "@arcgis/core/geometry/geometryEngine";
 import Locate from "@arcgis/core/widgets/Locate";
 import Point from "@arcgis/core/geometry/Point";
 import * as projection from "@arcgis/core/geometry/projection";
-import Graphic from "@arcgis/core/Graphic";
+
 
 
 // Create the map
@@ -83,6 +83,25 @@ const viewingLayer = new FeatureLayer({
 });
 map.add(viewingLayer);
 
+// --- Viewing Locations ---
+const sightingRenderer = new SimpleRenderer({
+  symbol: new PictureMarkerSymbol({
+    url: `${import.meta.env.BASE_URL}plane.svg`,
+    width: "24px",
+    height: "24px"
+  })
+});
+const imageLayer = new FeatureLayer({
+  url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/MachLoop_Image_Collector_3_view/FeatureServer/0",
+  renderer: sightingRenderer,
+  outFields: ["*"],
+  // popupTemplate: {
+  //   title: "{name}",
+  //   content: "{site_info}"
+  // }
+});
+map.add(imageLayer);
+
 // --- RAF Bases ---
 const rafRenderer = new SimpleRenderer({
   symbol: new PictureMarkerSymbol({
@@ -91,6 +110,7 @@ const rafRenderer = new SimpleRenderer({
     height: "24px"
   })
 });
+
 
 const rafLayer = new FeatureLayer({
   url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/RAF_Bases/FeatureServer/0",
@@ -201,4 +221,11 @@ view.when(() => {
       console.error(error);
     });
   });
+});
+
+
+// Your Survey123 URL
+const surveyURL = "https://arcg.is/0GXX1v2";
+surveyBtn.addEventListener("click", () => {
+  window.open(surveyURL, "_blank");
 });
