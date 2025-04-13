@@ -27,7 +27,7 @@ const labelClass = new LabelClass({
       weight: "bold"
     }
   },
-  labelPlacement: "above-center"  // Best for polygons
+  labelPlacement: "always-horizontal"
 });
 
 // Create the map
@@ -289,8 +289,6 @@ view.when(() => {
       let closestFeature = null;
       let minDistance = Infinity;
 
-
-
       result.features.forEach((feature) => {
         // console.log("User point:", userPoint);
         // console.log("Feature geometry:", feature.geometry);
@@ -324,6 +322,7 @@ view.when(() => {
   closeInfo.addEventListener("click", () => {
     infoModal.style.display = "none";
   });
+
 });
 
 
@@ -331,4 +330,56 @@ view.when(() => {
 const surveyURL = "https://arcg.is/0GXX1v2";
 surveyBtn.addEventListener("click", () => {
   window.open(surveyURL, "_blank");
+
+  const bookmarks = new Bookmarks({
+    view: view,
+    bookmarks: [
+      {
+        name: "Bluebell",
+        viewpoint: {
+          targetGeometry: new Point({ longitude: -3.738659, latitude: 52.729595, spatialReference: { wkid: 4326 } }),
+          scale: 15000
+        }
+      },
+      {
+        name: "Bwlch",
+        viewpoint: {
+          targetGeometry: new Point({ longitude: -3.849614, latitude: 52.706927, spatialReference: { wkid: 4326 } }),
+          scale: 15000
+        }
+      },
+      {
+        name: "Cad West",
+        viewpoint: {
+          targetGeometry: new Point({ longitude: -3.844979, latitude: 52.708969, spatialReference: { wkid: 4326 } }),
+          scale: 15000
+        }
+      },
+      {
+        name: "Cad East",
+        viewpoint: {
+          targetGeometry: new Point({ longitude: -3.843717, latitude: 52.703611, spatialReference: { wkid: 4326 } }),
+          scale: 15000
+        }
+      },
+      {
+        name: "Corris Craft Centre",
+        viewpoint: {
+          targetGeometry: new Point({ longitude: -3.850125, latitude: 52.654033, spatialReference: { wkid: 4326 } }),
+          scale: 15000
+        }
+      }
+    ]
+  });
+  view.ui.add(bookmarks, "top-right");
+// Locate widget
+const locateWidget = new Locate({
+  view: view,
+  useHeadingEnabled: false,
+  goToOverride: (view, options) => {
+    options.target.scale = 1500;
+    return view.goTo(options.target);
+  }
+});
+view.ui.add(locateWidget, "top-left");
 });
