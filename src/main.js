@@ -10,9 +10,13 @@ import * as projection from "@arcgis/core/geometry/projection";
 import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol";
 import LabelClass from "@arcgis/core/layers/support/LabelClass";
 import Home from "@arcgis/core/widgets/Home";
+import Compass from "@arcgis/core/widgets/Compass";
+import BasemapGallery from "@arcgis/core/widgets/BasemapGallery";
+import Expand from "@arcgis/core/widgets/Expand";
 
+// All point layers use this to set the visible scale
+const pointZoomScale = 550000;
 
-const pointZoomScale = 550000; 
 // Define the label class
 const labelClass = new LabelClass({
   labelExpressionInfo: {
@@ -42,7 +46,7 @@ const view = new MapView({
   container: "viewDiv",
   map: map,
   center: [-1.65, 53.86],
-  zoom: 6
+  zoom: 6,
 });
 
 // --- Machloop Area ---
@@ -216,7 +220,7 @@ const rafLayer = new FeatureLayer({
   labelsVisible: false,  // Must be true to show labels
   outFields: ["*"],
   popupTemplate: {
-    title: "RAF Base: {name}",
+    title: "Royal Air Force Base: {name}",
     content: (feature) => {
       const attrs = feature.graphic.attributes;
       const geom = feature.graphic.geometry;
@@ -257,6 +261,27 @@ const locateWidget = new Locate({
 view.ui.add(locateWidget, "top-left");
 
 view.when(() => {
+  // Add the BasemapGallery widget
+  const basemapGallery = new BasemapGallery({
+    view: view
+  });
+  
+  const basemapExpand = new Expand({
+    view: view,
+    content: basemapGallery,
+    expandIconClass: "esri-icon-basemap",  // or "esri-icon-map-pin"
+    expandTooltip: "Choose a basemap",
+    group: "top-left" // Ensures it doesn't overlap other widgets
+  });
+  
+  view.ui.add(basemapExpand, "top-left");
+
+  // Add the compass widget
+  const compass = new Compass({
+    view: view
+  });
+  view.ui.add(compass, "top-left");
+
   machloopLayer.when(() => {
     machloopLayer.queryExtent().then((response) => {
       const machloopExtent = response.extent;
