@@ -1,14 +1,16 @@
+// All necessary ArcGIS imports
 import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import SimpleRenderer from "@arcgis/core/renderers/SimpleRenderer";
 import PictureMarkerSymbol from "@arcgis/core/symbols/PictureMarkerSymbol";
-import * as geometryEngine from "@arcgis/core/geometry/geometryEngine";
+import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol";
+import LabelClass from "@arcgis/core/layers/support/LabelClass";
+import Bookmarks from "@arcgis/core/widgets/Bookmarks";
 import Locate from "@arcgis/core/widgets/Locate";
 import Point from "@arcgis/core/geometry/Point";
 import * as projection from "@arcgis/core/geometry/projection";
-
-
+import * as geometryEngine from "@arcgis/core/geometry/geometryEngine";
 
 // Create the map
 const map = new Map({
@@ -19,213 +21,99 @@ const map = new Map({
 const view = new MapView({
   container: "viewDiv",
   map: map,
-  center: [-3.771882, 52.687300],
-  zoom: 11
+  center: [-1.65, 53.86],
+  zoom: 6
 });
 
-// --- Camping Locations ---
-const campingRenderer = new SimpleRenderer({
-  symbol: new PictureMarkerSymbol({
-    url: `${import.meta.env.BASE_URL}camping.svg`,
-    width: "24px",
-    height: "24px"
-  })
-});
-
-const campingLayer = new FeatureLayer({
-  url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/CampingLocations/FeatureServer/0",
-  renderer: campingRenderer,
-  outFields: ["*"],
-  popupTemplate: {
-    title: "{name}",
-    content: "{facilities}"
-  }
-});
-map.add(campingLayer);
-
-// --- Parking Locations ---
-const parkingRenderer = new SimpleRenderer({
-  symbol: new PictureMarkerSymbol({
-    url: `${import.meta.env.BASE_URL}parking.svg`,
-    width: "24px",
-    height: "24px"
-  })
-});
-
-const parkingLayer = new FeatureLayer({
-  url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/ParkingLocations/FeatureServer/0",
-  renderer: parkingRenderer,
-  outFields: ["*"],
-  popupTemplate: {
-    title: "{name}",
-    content: "{spots}"
-  }
-});
-map.add(parkingLayer);
-
-// --- Viewing Locations ---
-const viewRenderer = new SimpleRenderer({
-  symbol: new PictureMarkerSymbol({
-    url: `${import.meta.env.BASE_URL}view.svg`,
-    width: "24px",
-    height: "24px"
-  })
-});
-
-const viewingLayer = new FeatureLayer({
-  url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/ViewingLocations/FeatureServer/0",
-  renderer: viewRenderer,
-  outFields: ["*"],
-  popupTemplate: {
-    title: "{name}",
-    content: "{site_info}"
-  }
-});
-map.add(viewingLayer);
-
-// --- Viewing Locations ---
-const sightingRenderer = new SimpleRenderer({
-  symbol: new PictureMarkerSymbol({
-    url: `${import.meta.env.BASE_URL}plane.svg`,
-    width: "24px",
-    height: "24px"
-  })
-});
-const imageLayer = new FeatureLayer({
-  url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/MachLoop_Image_Collector_3_view/FeatureServer/0",
-  renderer: sightingRenderer,
-  outFields: ["*"],
-  // popupTemplate: {
-  //   title: "{name}",
-  //   content: "{site_info}"
-  // }
-});
-map.add(imageLayer);
-
-// --- RAF Bases ---
-const rafRenderer = new SimpleRenderer({
-  symbol: new PictureMarkerSymbol({
-    url: `${import.meta.env.BASE_URL}fighter-jet.svg`,
-    width: "24px",
-    height: "24px"
-  })
-});
-
-
-const rafLayer = new FeatureLayer({
-  url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/RAF_Bases/FeatureServer/0",
-  renderer: rafRenderer,
-  outFields: ["*"],
-  popupTemplate: {
-    title: "RAF Base: {name}",
-    content: (feature) => {
-      const attrs = feature.graphic.attributes;
-      const geom = feature.graphic.geometry;
-      const lat = geom.latitude?.toFixed(6);
-      const lon = geom.longitude?.toFixed(6);
-  
-      return `
-        <div style="display: flex; gap: 12px;">
-          <img src="${attrs.image_URL}" alt=" RAF Base Image" style="width: 100px; height: auto; border-radius: 6px; object-fit: cover;" />
-          <div style="font-size: 14px; line-height: 1.5;">
-            <ul style="padding-left: 18px; margin: 0;">
-              <li><strong>ICAO Code:</strong> ${attrs.ICAO_Code || "N/A"}</li>
-              <li><strong>IATA Code:</strong> ${attrs.IATA_Code || "N/A"}</li>
-              <li><strong>Elevation:</strong> ${attrs.elevation || "N/A"}</li>
-              <li><strong>Runway:</strong> ${attrs.runway || "N/A"}</li>
-            </ul>
-          </div>
-        </div>
-  
-        <div style="margin-top: 16px; font-size: 14px; line-height: 1.6;">
-          ${attrs.description || ""}
-        </div>
-      `;
+// Define the label class for polygons
+const labelClass = new LabelClass({
+  labelExpressionInfo: { expression: "$feature.name" },
+  symbol: {
+    type: "text",
+    color: "black",
+    haloColor: "white",
+    haloSize: 1,
+    font: {
+      family: "sans-serif",
+      size: 12,
+      weight: "bold"
     }
-  }
+  },
+  labelPlacement: "above-center"
 });
-map.add(rafLayer);
 
+// --- Machloop Area Layer ---
+const polygonSymbol = new SimpleFillSymbol({
+  color: [0, 120, 255, 0.2],
+  outline: { color: [0, 120, 255, 1], width: 2 }
+});
+
+const machloopLayer = new FeatureLayer({
+  url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/MachLoop_Area/FeatureServer/0",
+  renderer: new SimpleRenderer({ symbol: polygonSymbol }),
+  outFields: ["*"],
+  labelingInfo: [labelClass],
+  labelsVisible: true,
+  popupTemplate: {
+    title: "Mach Loop Area",
+    content: "This is the designated low-flying military training area."
+  },
+  maxScale: 200000
+});
+map.add(machloopLayer);
+
+// Bookmark Widget (added after view is ready)
+view.when(() => {
+  const bookmarks = new Bookmarks({
+    view: view,
+    bookmarks: [
+      {
+        name: "Bluebell",
+        viewpoint: {
+          targetGeometry: new Point({ longitude: -3.738659, latitude: 52.729595, spatialReference: { wkid: 4326 } }),
+          scale: 15000
+        }
+      },
+      {
+        name: "Bwlch",
+        viewpoint: {
+          targetGeometry: new Point({ longitude: -3.849614, latitude: 52.706927, spatialReference: { wkid: 4326 } }),
+          scale: 15000
+        }
+      },
+      {
+        name: "Cad West",
+        viewpoint: {
+          targetGeometry: new Point({ longitude: -3.844979, latitude: 52.708969, spatialReference: { wkid: 4326 } }),
+          scale: 15000
+        }
+      },
+      {
+        name: "Cad East",
+        viewpoint: {
+          targetGeometry: new Point({ longitude: -3.843717, latitude: 52.703611, spatialReference: { wkid: 4326 } }),
+          scale: 15000
+        }
+      },
+      {
+        name: "Corris Craft Centre",
+        viewpoint: {
+          targetGeometry: new Point({ longitude: -3.850125, latitude: 52.654033, spatialReference: { wkid: 4326 } }),
+          scale: 15000
+        }
+      }
+    ]
+  });
+  view.ui.add(bookmarks, "top-right");
+});
+
+// Locate widget
 const locateWidget = new Locate({
   view: view,
-  useHeadingEnabled: false, // optional, shows phone orientation
+  useHeadingEnabled: false,
   goToOverride: (view, options) => {
-    options.target.scale = 1500; // zoom level when locating
+    options.target.scale = 1500;
     return view.goTo(options.target);
   }
 });
-
 view.ui.add(locateWidget, "top-left");
-
-view.when(() => {
-  document.getElementById("nearestBtn").addEventListener("click", async () => {
-    // 1. Get user location
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser.");
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      await projection.load();
-
-      const userPoint = new Point({
-        longitude: position.coords.longitude,
-        latitude: position.coords.latitude,
-        spatialReference: { wkid: 4326 }  // WGS84
-      });
-      
-      const projectedUserPoint = projection.project(userPoint, view.spatialReference);
-
-      // 2. Query viewing locations
-      const result = await viewingLayer.queryFeatures({
-        where: "1=1",
-        outFields: ["*"],
-        returnGeometry: true
-      });
-
-      if (!result.features.length) {
-        alert("No viewing locations found.");
-        return;
-      }
-
-      // 3. Find the nearest one
-      let closestFeature = null;
-      let minDistance = Infinity;
-
-
-
-      result.features.forEach((feature) => {
-        // console.log("User point:", userPoint);
-        // console.log("Feature geometry:", feature.geometry);
-        const distance = geometryEngine.distance(projectedUserPoint, feature.geometry, "meters");
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestFeature = feature;
-        }
-      });
-
-      if (closestFeature) {
-        // 4. Zoom to and open popup
-        view.goTo({
-          target: closestFeature.geometry,
-          zoom: 15
-        });
-
-        view.openPopup({
-          features: [closestFeature],
-          location: closestFeature.geometry
-        });
-      }
-    }, (error) => {
-      alert("Failed to get your location.");
-      console.error(error);
-    });
-  });
-});
-
-
-// Your Survey123 URL
-const surveyURL = "https://arcg.is/0GXX1v2";
-surveyBtn.addEventListener("click", () => {
-  window.open(surveyURL, "_blank");
-});
